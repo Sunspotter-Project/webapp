@@ -1,0 +1,236 @@
+
+.leaflet-sidebar-content::-webkit-scrollbar {
+    width: 0px;
+  }
+
+.leaflet-sidebar-content.night-theme {
+    background-color: rgb(52 51 50);
+    color: #cccccc;
+}
+
+.leaflet-sidebar-tabs.night-theme {
+    background-color: rgb(52 51 50);
+}
+
+/* webcam listitem styles */
+
+.webcamlistitem {
+    display: flex;
+    margin: 20px 0px;
+    cursor: pointer;
+}
+
+.webcamlistitem-image {
+    margin-right: 20px;
+}
+
+.webcamlistitem-image > img {
+    max-width: 150px;
+    border-radius: 4px;
+}
+
+.webcamlistitem-data {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.webcamlistitem-title {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.webcamlistitem-prediction {
+    background-color: #FFFF66;
+    border: 1px solid #FFFF00;
+    border-radius: 10px;
+    font-size: 10px;
+    max-width: 50px;
+    color: darkslategrey;
+}
+
+.webcamlistitem-predictionconfidence {
+    font-weight: 100;
+    font-size: 10px;
+}
+
+.webcamlistitem-createdat {
+    font-weight: 100;
+    font-size: 10px;
+}
+
+.webcamlistitem-country {
+    font-weight: 100;
+    font-size: 10px;
+}
+
+
+/* webcam tool tip styles */
+
+.webcammarkertooltip {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0px;
+    cursor: pointer;
+}
+
+.webcammarkertooltip-image {
+    margin-right: 20px;
+}
+
+.webcammarkertooltip-image > img {
+    width: 200px;
+    border-radius: 4px;
+}
+
+.webcammarkertooltip-data {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.webcammarkertooltip-title {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.webcammarkertooltip-prediction {
+    background-color: #FFFF66;
+    border: 1px solid #FFFF00;
+    border-radius: 10px;
+    font-size: 10px;
+    max-width: 50px;
+    color: darkslategrey;
+}
+
+.webcammarkertooltip-predictionconfidence {
+    font-weight: 100;
+    font-size: 10px;
+}
+
+.webcammarkertooltip-createdat {
+    font-weight: 100;
+    font-size: 10px;
+}
+
+.webcammarkertooltip-country {
+    font-weight: 100;
+    font-size: 10px;
+}
+
+/* styles for the icons on the map and the list */
+
+.prediction-icon {
+    margin-right: 4px;
+}
+
+.map-pin-icon {
+    color: red;
+    text-shadow: 0px 1px 3px #000000;
+}
+
+.map-webcam-icon-inactive .map-webcam-icon-inactive.night-theme {
+    color: lemonchiffon;
+    text-shadow: 0px 1px 3px #000000;
+}
+
+.map-webcam-icon-active {
+    color: #cbf83e;
+    text-shadow: 0px 2px 4px #000000;
+}
+
+.map-webcam-icon-active.night-theme {
+    color: #999;
+    text-shadow: 0 1px 1px #FFFF00;
+}
+
+.map-webcam-icon-moon {
+    color: #FFFF00;
+    margin: -5px;
+}
+
+.map-prediction-icon-sun {
+    color: #FFFF00;
+    font-size: 12px;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+.map-prediction-icon-cloud {
+    color: #ccc;
+    font-size: 12px;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+.list-webcam-icon-inactive .list-webcam-icon-inactive.night-theme {
+    color: lemonchiffon;
+    text-shadow: 0px 1px 3px #000000;
+}
+
+.list-webcam-icon-active {
+    color: #cbf83e;
+    text-shadow: 0px 1px 3px #000000;
+}
+
+.list-webcam-icon-active.night-theme {
+    color: #999;
+    text-shadow: 0 1px 1px #FFFF00;
+}
+
+
+.list-prediction-icon-sun {
+    color: #FFFF00;
+    font-size: 12px;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+.list-prediction-icon-cloud {
+    color: #ccc;
+    font-size: 12px;
+    text-shadow: 0px 1px 3px #000000;
+}
+
+
+/* leaflet sidebar */
+.leaflet-sidebar-header {
+    color: #fff;
+    background-color: #cbf83e;
+}
+
+.leaflet-sidebar-tabs > ul > li.active {
+    color: #fff;
+    background-color: #cbf83e;
+}
+
+/* leaflet control center plugin */
+
+/* control positioning */
+.leaflet-center {
+    position: relative !important;
+    left: 0;
+    right: 0;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+}
+.leaflet-center .leaflet-control 
+{
+    bottom: 0; 
+}
+
+.leaflet-control-container .leaflet-control-bottomcenter {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0; 
+}
+
+/* styles for the Leaflet webcam filter control */
+
+.webcam-filter-control {
+    background-color: white;
+    border-radius: 4px;
+    padding: 4px;
+    color: #343332;
+}
+
