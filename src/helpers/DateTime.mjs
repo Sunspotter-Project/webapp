@@ -5,14 +5,14 @@ class DateTimeHelper {
     }
 
     static formatDateTimeString(dateTimeAsString) {
-        var date = new Date(dateTimeAsString);
-        var dateFormatted = DateTimeHelper.formatDate(date);
+        const date = new Date(dateTimeAsString);
+        const dateFormatted = DateTimeHelper.formatDate(date);
         return dateFormatted;
     }
-    
+
     static formatDate(date) {
-        var locale = this.getLocale();
-        var format = new Intl.DateTimeFormat(
+        const locale = this.getLocale();
+        const format = new Intl.DateTimeFormat(
             locale,
             {
             year: "numeric",
@@ -27,12 +27,10 @@ class DateTimeHelper {
     }
 
     static formatUnixTimestamp(unixTimestamp) {
-        var date;
-        var dateFormatted = '';
-        var unixTimestampAsInt;
+        let dateFormatted = '';
         if (!isNaN(unixTimestamp)) {
-            unixTimestampAsInt = parseInt(unixTimestamp);
-            date = new Date(unixTimestamp * 1000);
+            const unixTimestampAsInt = parseInt(unixTimestamp);
+            const date = new Date(unixTimestampAsInt * 1000);
             dateFormatted = DateTimeHelper.formatDate(date);
         } else {
             console.error(`Can't format unixtimestamp ${unixTimestamp} to a formatted date`);

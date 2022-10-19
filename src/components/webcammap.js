@@ -17,10 +17,10 @@ var mbToken ="pk.eyJ1IjoiY2hyaXNtYXQiLCJhIjoiY2t3czJwMnZiMTI5dzJvcW92eXprdzFzbiJ
 var mbUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mbToken;
 
 class WebcamMap extends React.Component {
-  
+
   constructor(props) {
     super(props);
-    
+
     this.onMapMooved = this.onMapMooved.bind(this);
     this.onWebcamsLoaded = this.onWebcamsLoaded.bind(this);
     this.onWebcamFilterChanged = this.onWebcamFilterChanged.bind(this);
@@ -50,7 +50,7 @@ class WebcamMap extends React.Component {
       zoom: 10,
       layers: [this.dayTimeLayer]
     }).setView(this.initialMapCenter, 8);
-    
+
     // add marker layer
     this.map.addLayer(this.markerLayer);
 
@@ -58,7 +58,7 @@ class WebcamMap extends React.Component {
     this.map.on('moveend', this.onMapMooved.bind(this));
 
     window.addEventListener("resize", this.updateDimensions.bind(this))
-  
+
     // add location search field to map
     const searchPositionIcon = L.divIcon({
       html: '<i class="fa fa-map-pin map-pin-icon"></i>',
@@ -78,7 +78,7 @@ class WebcamMap extends React.Component {
       marker: searchMarkerOptions
     });
     this.map.addControl(search);
-    
+
     // add the webcam filter control to the map
     this.webcamFilter = L.webcamFilterControl({
       position: 'bottomcenter',     // left or right
@@ -100,10 +100,10 @@ class WebcamMap extends React.Component {
     sidebar.open('webcamlist');
 
     this.updateIsDayTime();
- 
+
 
     var bounds = this.map.getBounds();
-    var pml = this.getCheckedPredictionModelLabels(); 
+    var pml = this.getCheckedPredictionModelLabels();
     var confidence = this.getSelectedConfidence();
     this.loadWebcams(this.webcamlimit, this.webcamage, bounds, pml, confidence);
   }
@@ -147,7 +147,7 @@ class WebcamMap extends React.Component {
       bounds: bounds.toBBoxString(),
       pml: pml
     };
-    axios.get('/webcam', { params }).then(this.onWebcamsLoaded);
+    axios.get('/webcam/v2', { params }).then(this.onWebcamsLoaded);
   }
 
   onWebcamsLoaded(response) {
@@ -185,17 +185,17 @@ class WebcamMap extends React.Component {
 
     for (var i = 0; i < webcams.length; i++) {
       webcam = webcams[i];
-      markerIcon = RenderHelper.getMarkerIcon(webcam, this.state.isDayTime);
+      markerIcon = RenderHelper.getMarkerIcon(webcam.location, webcam.status, webcam.prediction, this.state.isDayTime);
       location = webcam.location;
       latitude = location.coordinates[0];
       longitude = location.coordinates[1];
       marker = L.marker([latitude, longitude], {alt: webcam.id, icon: markerIcon}); //.on('click', this.onMarkerClick).addTo(this.map);
-      
-      tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.Predictions, this.state.isDayTime)
+
+      tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.prediction, this.state.isDayTime)
       marker.bindTooltip(tooltipHtml);
       this.markerLayer.addLayer(marker);
       this.markers.push({ pkwebcam: webcam.pkwebcam, marker: marker});
-      
+
     }
   }
 
@@ -254,15 +254,15 @@ class WebcamMap extends React.Component {
     return <div class="webcammap"><div id="map" style={{ height: this.state.height }}></div>
       <div id="sidebar" class="leaflet-sidebar collapsed">
 
-        <div class={`leaflet-sidebar-tabs ${this.state.isDayTime ? '':'night-theme'}`}> 
+        <div class={`leaflet-sidebar-tabs ${this.state.isDayTime ? '':'night-theme'}`}>
             <ul role="tablist">
                 <li><a href="#webcamlist" role="tab"><i class="fa fa-video-camera"></i></a></li>
                 <li><a href="#location" role="tab"><i class="fa fa-location-arrow active-location"></i></a></li>
             </ul>
         </div>
-        
+
         <div class={`leaflet-sidebar-content ${this.state.isDayTime ? '':'night-theme'}`}>
-            
+
             <div class="leaflet-sidebar-pane" id="webcamlist">
                 <h1 class="leaflet-sidebar-header">
                     Sunspotter
@@ -270,7 +270,7 @@ class WebcamMap extends React.Component {
                 </h1>
                 <WebcamList webcams={this.state.webcams} isDayTime={this.state.isDayTime} />
             </div>
-            
+
             <div class="leaflet-sidebar-pane" id="home">
                 <h1 class="leaflet-sidebar-header">
                     sidebar-v2

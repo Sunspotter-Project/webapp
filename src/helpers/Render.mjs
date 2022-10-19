@@ -3,46 +3,43 @@ import { PredictionHelper } from './Prediction.mjs';
 
 class RenderHelper {
 
-    static getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, predictions, isDayTime, cssClassPrefix, iconCssClassPrefix) {
-        
-        var prediction = PredictionHelper.formatFirstPrediction(predictions, isDayTime, webcamLastupdate, webcamStatus, webcamImgUrl, iconCssClassPrefix);
-        var html = 
+    static getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime, cssClassPrefix, iconCssClassPrefix) {
+
+        const predictionData = PredictionHelper.formatPrediction(prediction, isDayTime, webcamLastupdate, webcamStatus, webcamImgUrl, iconCssClassPrefix);
+        const html =
         `<div class="${cssClassPrefix}">
             <div class="${cssClassPrefix}-aside">
                 <div class="${cssClassPrefix}-image">
-                    <img src="${prediction.fullImgUrl}" />
+                    <img src="${predictionData.fullImgUrl}" />
                 </div>
             </div>
             <div class="${cssClassPrefix}-data">
-                <div class="${cssClassPrefix}-title"><i class="${prediction.iconClasses}"></i>&nbsp;<span class="${cssClassPrefix}-predictionconfidence">${prediction.confidence}</span>&nbsp;${webcamTitle}</div>
+                <div class="${cssClassPrefix}-title"><i class="${predictionData.iconClasses}"></i>&nbsp;<span class="${cssClassPrefix}-predictionconfidence">${predictionData.confidence}</span>&nbsp;${webcamTitle}</div>
                 
                 <div class="${cssClassPrefix}-city">${webcamCity} <span class="${cssClassPrefix}-country">${webcamCountry}&nbsp;(${webcamCountryCode})</span></div>
             
-                <div class="${cssClassPrefix}-createdat">${prediction.createdat}</div>
+                <div class="${cssClassPrefix}-createdat">${predictionData.createdat}</div>
             </div>
         </div>`;
-        
+
         return html;
     }
 
-    static getWebcamMarkerToolTipHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, predictions, isDayTime) {
-        
-        var html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, predictions, isDayTime, 'webcammarkertooltip', 'list');
+    static getWebcamMarkerToolTipHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime) {
+
+        const html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime, 'webcammarkertooltip', 'list');
         return html;
     }
 
-    static getWebcamListItemHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, predictions, isDayTime) {
-        
-        var html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, predictions, isDayTime, 'webcamlistitem', 'list');
+    static getWebcamListItemHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime) {
+
+        const html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime, 'webcamlistitem', 'list');
         return html;
     }
 
-    static getMarkerIcon(webcam, isDayTime) {
-        
-        var prediction;
-        var modellabel;
-        var modellabelicon;
-        var markerIcon;
+    static getMarkerIcon(webcamLocation, webcamStatus, prediction, isDayTime) {
+
+        let markerIcon;
 
         const activeIcon = L.divIcon({
             html: '<i class="fa fa-video-camera map-webcam-icon-active"></i>',
@@ -76,10 +73,8 @@ class RenderHelper {
 
         const icons = { "active": activeIcon, "inactive": inactiveIcon, "activeNight": activeNightIcon, "sun": sunIcon, "cloud": cloudIcon };
 
-        // check if the webcam has a location
-        if (webcam.location !== undefined) {
-            
-            if (webcam.status === 'active') {
+        if (webcamLocation !== undefined) {
+            if (webcamStatus === 'active') {
                 if (isDayTime) {
                     markerIcon = activeIcon;
                 } else {
@@ -88,17 +83,8 @@ class RenderHelper {
             } else {
                 markerIcon = inactiveIcon;
             }
-
-            if (webcam.Predictions !== undefined) {
-                if (webcam.Predictions.length > 0) {
-                    // found a prediction
-                    prediction = webcam.Predictions[0];
-                    if (prediction !== null) {
-                        modellabel = prediction.PredictionModelLabel;
-                        modellabelicon = modellabel.cssclass;
-                        markerIcon = icons[modellabelicon];
-                    }
-                }
+            if (PredictionHelper.isValidPrediction(prediction)) {
+                markerIcon = icons[prediction.cssclass];
             }
         }
         return markerIcon;

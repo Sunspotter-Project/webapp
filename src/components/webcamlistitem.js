@@ -8,13 +8,13 @@ class WebcamListItem extends React.Component {
       webcamLastupdate: this.props.webcamLastupdate,
       webcamStatus: this.props.webcamStatus,
       webcamImgUrl: this.props.webcamImgUrl,
-      predictions: this.props.predictions,
+      prediction: this.props.prediction,
       isDayTime: this.props.isDayTime
     }
   }
 
   render() {
-    var htmlString = RenderHelper.getWebcamListItemHtml(this.props.title, this.props.city, this.props.country, this.props.countryCode, this.state.webcamLastupdate, this.state.webcamStatus, this.state.webcamImgUrl, this.state.predictions, this.state.isDayTime)
+    const htmlString = RenderHelper.getWebcamListItemHtml(this.props.title, this.props.city, this.props.country, this.props.countryCode, this.state.webcamLastupdate, this.state.webcamStatus, this.state.webcamImgUrl, this.state.prediction, this.state.isDayTime)
     return <div dangerouslySetInnerHTML={{ __html: htmlString }}></div>;
 
   }
