@@ -3,17 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "proxy": "http://localhost:3001/",
+  "type": "module",
   "dependencies": {
     "@testing-library/jest-dom": "^5.15.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.24.0",
+    "cookie-parser": "^1.4.6",
     "font-awesome": "^4.7.0",
     "http-proxy-middleware": "^2.0.1",
     "leaflet": "^1.7.1",
     "leaflet-geosearch": "^3.6.0",
     "leaflet-sidebar-v2": "^3.2.3",
     "mapbox-gl-leaflet": "^0.0.15",
+    "morgan": "^1.10.0",
     "node-fetch": "^3.2.10",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -26,7 +29,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "app": "node app.js"
   },
   "eslintConfig": {
     "extends": [
