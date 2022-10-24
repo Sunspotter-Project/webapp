@@ -3,14 +3,17 @@ import { PredictionHelper } from './Prediction.mjs';
 
 class RenderHelper {
 
-    static getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime, cssClassPrefix, iconCssClassPrefix) {
+    static getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrlMedRes, webcamImgUrlHighRes, prediction, isDayTime, cssClassPrefix, iconCssClassPrefix) {
 
-        const predictionData = PredictionHelper.formatPrediction(prediction, isDayTime, webcamLastupdate, webcamStatus, webcamImgUrl, iconCssClassPrefix);
+        const predictionData = PredictionHelper.formatPrediction(prediction, isDayTime, webcamLastupdate, webcamStatus, webcamImgUrlMedRes, iconCssClassPrefix);
+        const predictionImage = `<img src="${predictionData.fullImgUrl}" />`;
+        const predictionImageAndLink = `<a href="${webcamImgUrlHighRes}" target="_blank" >${predictionImage}</a>`;
+        const predictionImageResult = PredictionHelper.isValidPrediction(prediction) ? predictionImage : predictionImageAndLink;
         const html =
         `<div class="${cssClassPrefix}">
             <div class="${cssClassPrefix}-aside">
                 <div class="${cssClassPrefix}-image">
-                    <img src="${predictionData.fullImgUrl}" />
+                    ${predictionImageResult}
                 </div>
             </div>
             <div class="${cssClassPrefix}-data">
@@ -18,22 +21,22 @@ class RenderHelper {
                 
                 <div class="${cssClassPrefix}-city">${webcamCity} <span class="${cssClassPrefix}-country">${webcamCountry}&nbsp;(${webcamCountryCode})</span></div>
             
-                <div class="${cssClassPrefix}-createdat">${predictionData.createdat}</div>
+                <div class="${cssClassPrefix}-createdat">${predictionData.createdatText}&nbsp;${predictionData.createdat}</div>
             </div>
         </div>`;
 
         return html;
     }
 
-    static getWebcamMarkerToolTipHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime) {
+    static getWebcamMarkerToolTipHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrlMedRes, webcamImgUrlHighRes, prediction, isDayTime) {
 
-        const html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime, 'webcammarkertooltip', 'list');
+        const html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrlMedRes, webcamImgUrlHighRes, prediction, isDayTime, 'webcammarkertooltip', 'list');
         return html;
     }
 
-    static getWebcamListItemHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime) {
+    static getWebcamListItemHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrlMedRes, webcamImgUrlHighRes, prediction, isDayTime) {
 
-        const html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrl, prediction, isDayTime, 'webcamlistitem', 'list');
+        const html = RenderHelper.getWebcamPredictionHtml(webcamTitle, webcamCity, webcamCountry, webcamCountryCode, webcamLastupdate, webcamStatus, webcamImgUrlMedRes, webcamImgUrlHighRes, prediction, isDayTime, 'webcamlistitem', 'list');
         return html;
     }
 

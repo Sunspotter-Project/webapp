@@ -10,6 +10,7 @@ import WebcamList from './webcamlist.js';
 import './webcamfilter.js';
 import { DaylightUtil } from '../helpers/Daylight.mjs';
 import { RenderHelper } from '../helpers/Render.mjs';
+import {PredictionHelper} from "../helpers/Prediction.mjs";
 
 // MapBox settings
 var mbAttr = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
@@ -191,7 +192,14 @@ class WebcamMap extends React.Component {
       longitude = location.coordinates[1];
       marker = L.marker([latitude, longitude], {alt: webcam.id, icon: markerIcon}); //.on('click', this.onMarkerClick).addTo(this.map);
 
-      tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.prediction, this.state.isDayTime)
+      if (!PredictionHelper.isValidPrediction(webcam.prediction)) {
+        const imgurlhighres = webcam.imgurlhighres;
+        marker.on('click', (e) => {
+          window.open(imgurlhighres, '_blank');
+        });
+      }
+
+      tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.imgurlhighres, webcam.prediction, this.state.isDayTime)
       marker.bindTooltip(tooltipHtml);
       this.markerLayer.addLayer(marker);
       this.markers.push({ pkwebcam: webcam.pkwebcam, marker: marker});

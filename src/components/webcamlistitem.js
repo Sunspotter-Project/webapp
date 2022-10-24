@@ -7,7 +7,7 @@ class WebcamListItem extends React.Component {
   }
 
   render() {
-    const htmlString = RenderHelper.getWebcamListItemHtml(this.props.title, this.props.city, this.props.country, this.props.countryCode, this.props.webcamLastupdate, this.props.webcamStatus, this.props.webcamImgUrl, this.props.prediction, this.props.isDayTime)
+    const htmlString = RenderHelper.getWebcamListItemHtml(this.props.title, this.props.city, this.props.country, this.props.countryCode, this.props.webcamLastupdate, this.props.webcamStatus, this.props.webcamImgUrlMedRes, this.props.webcamImgUrlHighRes, this.props.prediction, this.props.isDayTime)
     return <div dangerouslySetInnerHTML={{ __html: htmlString }}></div>;
 
   }
