@@ -218,9 +218,8 @@ class WebcamMap extends React.Component {
   }
 
   updateIsDayTime() {
-    var location = this.map.getCenter();
-    var isDayTime = DaylightUtil.isDayTime(new Date(), location);
-    isDayTime = true;
+    const location = this.map.getCenter();
+    const isDayTime = DaylightUtil.isDayTime(new Date(), location);
     if (this.state.isDayTime !== isDayTime) {
       this.setState({isDayTime: isDayTime});
       this.setMapDayNighTimeLayer(isDayTime);
