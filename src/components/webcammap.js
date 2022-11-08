@@ -245,7 +245,7 @@ class WebcamMap extends React.Component {
   }
 
   updateDimensions() {
-    const height = window.innerWidth;
+    const height = window.innerHeight;
     this.setState({ height: height })
   }
 
