@@ -17,7 +17,7 @@ L.WebcamFilterControl = L.Control.extend({
         L.Util.setOptions(this, options);
         // Continue initializing the control plugin here.
     },
-    
+
     onAdd: function(map) {
         var label;
         var selectOption;
@@ -29,7 +29,7 @@ L.WebcamFilterControl = L.Control.extend({
         selectOptionUnit = this.options.selectOptionsUnit;
         selectedOption = this.options.selectedOption;
         selectOptions = this.options.selectOptions.split(',');
-        
+
         this.controlElement = L.DomUtil.create('div', 'webcam-filter-control');
 
         // add sunny checkbox
@@ -41,7 +41,7 @@ L.WebcamFilterControl = L.Control.extend({
         L.DomEvent.addListener(this.chkBoxSunny, 'change', this.options.onFilterChange);
         label = L.DomUtil.create('label', 'webcam-filter-chkbox-label');
         label.for = 'sun';
-        label.innerHTML = 'Sunny&nbsp;<i class="fa fa-sun-o prediction-icon list-prediction-icon-sun"></i>';
+        label.innerHTML = 'Sunny&nbsp;<i class="fa fa-sun-o prediction-icon webcam-filter-prediction-icon-sun"></i>';
         this.controlElement.appendChild(this.chkBoxSunny);
         this.controlElement.appendChild(label);
 
@@ -78,7 +78,7 @@ L.WebcamFilterControl = L.Control.extend({
         L.DomEvent.addListener(this.chkBoxCloudyRainy, 'change', this.options.onFilterChange);
         label = L.DomUtil.create('label', 'webcam-filter-chkbox-label');
         label.for = 'cloud-rainy';
-        label.innerHTML = 'Cloudy&nbsp;<i class="fa fa-cloud prediction-icon list-prediction-icon-cloud"></i>';
+        label.innerHTML = 'Cloudy&nbsp;<i class="fa fa-cloud prediction-icon webcam-filter-prediction-icon-cloud"></i>';
         this.controlElement.appendChild(this.chkBoxCloudyRainy);
         this.controlElement.appendChild(label);
 
@@ -106,7 +106,7 @@ L.WebcamFilterControl = L.Control.extend({
 
         this.controlElement.appendChild(label);
         this.controlElement.appendChild(this.selectCloudyRainy);
-        
+
         */
 
         // add sunny select
@@ -132,7 +132,7 @@ L.WebcamFilterControl = L.Control.extend({
         //this.controlElement.appendChild(this.selectConfidence);
 
         // Continue implementing the control here.
-        
+
         return this.controlElement;
     },
 
@@ -167,6 +167,6 @@ L.WebcamFilterControl = L.Control.extend({
 
 L.webcamFilterControl = function(options) {
     return new L.WebcamFilterControl(options);
-}; 
+};
 
 
