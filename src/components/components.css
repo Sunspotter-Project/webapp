@@ -18,11 +18,15 @@
 }
 
 /* Leaflet geosearch control */
+
+leaflet-control-geosearch form {
+    padding: 0 18px;
+}
 .leaflet-touch .leaflet-control-geosearch a.reset {
     font-size: 30px;
     font-weight: normal;
     padding: 0px;
-    margin: 0 8px;
+    margin: 0 18px;
 }
 
 .leaflet-control-geosearch form input {
@@ -289,8 +293,8 @@
 }
 
 .webcam-filter-chkbox {
-    height: 20px;
-    width: 20px;
+    height: 16px;
+    width: 16px;
     margin-left: 10px;
 }
 
