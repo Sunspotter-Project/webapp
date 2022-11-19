@@ -200,7 +200,7 @@ class WebcamMap extends React.Component {
       }
 
       tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.imgurlhighres, webcam.prediction, this.state.isDayTime)
-      marker.bindTooltip(tooltipHtml);
+      marker.bindTooltip(tooltipHtml, { direction: 'top', offset: [0, -15]});
       this.markerLayer.addLayer(marker);
       this.markers.push({ pkwebcam: webcam.pkwebcam, marker: marker});
 
