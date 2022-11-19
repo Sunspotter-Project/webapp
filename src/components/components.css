@@ -19,7 +19,7 @@
 
 /* Leaflet geosearch control */
 
-leaflet-control-geosearch form {
+.leaflet-control-geosearch form {
     padding: 0 18px;
 }
 .leaflet-touch .leaflet-control-geosearch a.reset {
