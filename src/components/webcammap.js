@@ -30,7 +30,7 @@ class WebcamMap extends React.Component {
     this.loadWebcams = this.loadWebcams.bind(this);
 
     this.webcamlimit = 50;
-    this.webcamage = 1800; // 1800s -> 30min
+    this.webcamage = 3600; // 3600s -> 1h
     this.initialMapCenter = [46.8527,9.5306]; // Chur (CH)
     this.markers = [];
     this.markerLayer = L.layerGroup(this.markers);
