@@ -3,6 +3,7 @@ import L from 'leaflet';
 import '../plugins/leaflet-control-center.js';
 import 'mapbox-gl-leaflet';
 import axios from 'axios';
+import Supercluster from 'supercluster';
 // when the docs use an import:
 import * as GeoSearch from 'leaflet-geosearch';
 import 'leaflet-sidebar-v2'
@@ -24,6 +25,7 @@ class WebcamMap extends React.Component {
 
     this.onMapMooved = this.onMapMooved.bind(this);
     this.onWebcamsLoaded = this.onWebcamsLoaded.bind(this);
+    this.onGeoJSONLoaded = this.onGeoJSONLoaded.bind(this);
     this.onWebcamFilterChanged = this.onWebcamFilterChanged.bind(this);
     this.addWebcamMarkers = this.addWebcamMarkers.bind(this);
     this.clearWebcamMarkers = this.clearWebcamMarkers.bind(this);
@@ -36,6 +38,15 @@ class WebcamMap extends React.Component {
     this.markerLayer = L.layerGroup(this.markers);
     this.nightTimeLayer = L.tileLayer(mbUrl, {id: 'mapbox/dark-v9', tileSize: 512, zoomOffset: -1, attribution: mbAttr}); // night style
     this.dayTimeLayer = L.tileLayer(mbUrl, {id: 'mapbox/light-v9', tileSize: 512, zoomOffset: -1, attribution: mbAttr}); // gray style (day)
+    this.gridLayer = L.layerGroup();
+    this.clusterMarkers = L.layerGroup();
+
+    this.markerCluster = new Supercluster({
+      log: true,
+      radius: 60,
+      extent: 256,
+      maxZoom: 17
+    });
 
     this.state = {
       webcams: [],
@@ -52,8 +63,13 @@ class WebcamMap extends React.Component {
       layers: [this.dayTimeLayer]
     }).setView(this.initialMapCenter, 8);
 
+    // add grid layer
+    this.map.addLayer(this.gridLayer);
+
     // add marker layer
     this.map.addLayer(this.markerLayer);
+
+    this.map.addLayer(this.clusterMarkers);
 
     // event handlers
     this.map.on('moveend', this.onMapMooved.bind(this));
@@ -107,6 +123,41 @@ class WebcamMap extends React.Component {
     var pml = this.getCheckedPredictionModelLabels();
     var confidence = this.getSelectedConfidence();
     this.loadWebcams(this.webcamlimit, this.webcamage, bounds, pml, confidence);
+    this.loadGeoJSON();
+  }
+
+  drawGrid() {
+
+    const xFact = 25,
+        yFact = 20;
+
+    const m = this.map;
+    const bb = m.getBounds();
+    const xmin = m.latLngToLayerPoint( bb.getNorthWest() ).x;
+    const ymin = m.latLngToLayerPoint( bb.getNorthWest() ).y;
+    const xmax = m.latLngToLayerPoint( bb.getSouthEast() ).x;
+    const ymax = m.latLngToLayerPoint( bb.getSouthEast() ).y;
+        //converte da coordinate a pixel
+    const xinc = Math.round((xmax-xmin) / xFact);
+    const yinc = Math.round((ymax-ymin) / yFact);
+    let x,y, p1,p2, line;
+
+    this.gridLayer.clearLayers();
+
+    for(x = xmin; x<= xmax; x+= xinc)
+    {
+      p1 = m.layerPointToLatLng( new L.Point(x, ymin) );
+      p2 = m.layerPointToLatLng( new L.Point(x, ymax) );
+      line = new L.Polyline([p1, p2], { color: 'green', weight:1 });
+      this.gridLayer.addLayer(line);
+    }
+    for(y = ymin; y<= ymax; y+= yinc)
+    {
+      p1 = m.layerPointToLatLng( new L.Point(xmin, y) );
+      p2 = m.layerPointToLatLng( new L.Point(xmax, y) );
+      line = new L.Polyline([p1, p2], { color: 'green', weight:1 });
+      this.gridLayer.addLayer(line);
+    }
   }
 
   getCheckedPredictionModelLabels() {
@@ -151,10 +202,21 @@ class WebcamMap extends React.Component {
     axios.get('/webcam/v2', { params }).then(this.onWebcamsLoaded);
   }
 
+  loadGeoJSON() {
+    const params = {};
+    axios.get('/webcam/geojson', { params }).then(this.onGeoJSONLoaded);
+  }
+
+
   onWebcamsLoaded(response) {
-    var webcams = response.data;
+    const webcams = response.data;
     this.setState({webcams: webcams});
     this.addWebcamMarkers(webcams);
+  }
+
+  onGeoJSONLoaded(response) {
+    const data = response.data[0];
+    this.markerCluster.load(data.geojson.features);
   }
 
   onMapMooved(event) {
@@ -163,7 +225,98 @@ class WebcamMap extends React.Component {
     var pml = this.getCheckedPredictionModelLabels();
     var confidence = this.getSelectedConfidence();
     this.updateIsDayTime();
-    this.loadWebcams(this.webcamlimit, this.webcamage, bounds, pml, confidence);
+    //this.loadWebcams(this.webcamlimit, this.webcamage, bounds, pml, confidence);
+    const mapZoom = this.map.getZoom();
+    const westLng = bounds.getWest();
+    const southLat = bounds.getSouth();
+    const eastLng = bounds.getEast();
+    const northLat = bounds.getNorth();
+    const clusterBounds = [westLng, southLat, eastLng, northLat];
+    const clusters = this.markerCluster.getClusters(clusterBounds, mapZoom);
+
+
+
+    console.log(clusters);
+    this.createClusterMarkers(clusters);
+
+    const boundsPolygon = L.polygon([
+      bounds.getNorthWest(),
+      bounds.getNorthEast(),
+      bounds.getSouthEast(),
+      bounds.getSouthWest()
+    ]).addTo(map);
+    this.clusterMarkers.addLayer(boundsPolygon);
+  }
+
+  createClusterMarkers(clusters) {
+    this.clusterMarkers.clearLayers();
+
+    clusters.map((cluster) => {
+      const latlng = L.latLng(cluster.geometry.coordinates[1], cluster.geometry.coordinates[0]);
+      const clusterMarker = this.createClusterIcon(cluster, latlng);
+      this.clusterMarkers.addLayer(clusterMarker);
+
+      const distance = (coordsA, coordsB) => {
+        const deltaLng = Math.abs(parseFloat(coordsA[0]) - parseFloat(coordsB[0]));
+        const deltaLat = Math.abs(parseFloat(coordsA[1]) - parseFloat(coordsB[1]));
+        const distance = Math.sqrt(Math.pow(deltaLng, 2) + Math.pow(deltaLat, 2));
+        return distance;
+      }
+
+      const minDistance = (distances) => {
+
+        if (distances.length <= 0) return null;
+
+        let min = distances[0];
+        let minIdx = 0;
+        for (let i = 1; i < distances.length; ++i) {
+          if (distances[i] < min) {
+            min = distances[i];
+            minIdx = i;
+          }
+        }
+        return { value: min, idx: minIdx };
+      }
+
+      const clusteredPoints = this.markerCluster.getLeaves(cluster.id, 10, 0);
+
+      const clusteredPointsDistances = clusteredPoints.map((clusteredPoint) => {
+        return distance(clusteredPoint.geometry.coordinates, cluster.geometry.coordinates)
+      });
+
+      const minimalDistance = minDistance(clusteredPointsDistances);
+
+      const minimalDistanceClusteredPoint = clusteredPoints[minimalDistance.idx];
+      const markerlatlng = L.latLng(minimalDistanceClusteredPoint.geometry.coordinates[1], minimalDistanceClusteredPoint.geometry.coordinates[0]);
+      const clusteredPointMarker = this.createClusteredPointIcon(markerlatlng);
+      this.clusterMarkers.addLayer(clusteredPointMarker);
+      //console.log(minimalDistance);
+    });
+  }
+
+  createClusterIcon(feature, latlng) {
+    if (!feature.properties.cluster) return L.marker(latlng);
+
+    const count = feature.properties.point_count;
+    const sunIcon = L.divIcon({
+      html: '<i class="fa fa-sun-o map-prediction-icon-sun">',
+      iconSize: [20, 20],
+      className: 'myDivIcon'
+    });
+
+    //return L.marker(latlng, {icon});
+    return L.marker(latlng, {icon: sunIcon});
+  }
+
+  createClusteredPointIcon(latlng) {
+
+    const inactiveIcon = L.divIcon({
+      html: '<i class="fa fa-video-camera map-webcam-icon-inactive"></i>',
+      iconSize: [20, 20],
+      className: 'myDivIcon'
+    });
+
+    return L.marker(latlng, {icon: inactiveIcon});
   }
 
   onWebcamFilterChanged(event) {
@@ -188,8 +341,8 @@ class WebcamMap extends React.Component {
       webcam = webcams[i];
       markerIcon = RenderHelper.getMarkerIcon(webcam.location, webcam.status, webcam.prediction, this.state.isDayTime);
       location = webcam.location;
-      latitude = location.coordinates[0];
-      longitude = location.coordinates[1];
+      longitude = location.coordinates[0];
+      latitude = location.coordinates[1];
       marker = L.marker([latitude, longitude], {alt: webcam.id, icon: markerIcon}); //.on('click', this.onMarkerClick).addTo(this.map);
 
       if (!PredictionHelper.isValidPrediction(webcam.prediction)) {
