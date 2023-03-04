@@ -112,9 +112,12 @@
 /* webcam tool tip styles */
 
 .webcammarkertooltip {
+    /*
     display: flex;
     flex-direction: column;
-    max-width: 200px;
+    */
+    width: 203px;
+    height: 203px;
     cursor: pointer;
 }
 

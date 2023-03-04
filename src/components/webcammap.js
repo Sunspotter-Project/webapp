@@ -23,25 +23,22 @@ class WebcamMap extends React.Component {
   constructor(props) {
     super(props);
 
-    this.onMapMooved = this.onMapMooved.bind(this);
+    this.onMapMoved = this.onMapMoved.bind(this);
     this.onWebcamsLoaded = this.onWebcamsLoaded.bind(this);
-    this.onGeoJSONLoaded = this.onGeoJSONLoaded.bind(this);
     this.onWebcamFilterChanged = this.onWebcamFilterChanged.bind(this);
-    this.addWebcamMarkers = this.addWebcamMarkers.bind(this);
-    this.clearWebcamMarkers = this.clearWebcamMarkers.bind(this);
     this.loadWebcams = this.loadWebcams.bind(this);
 
     this.webcamlimit = 50;
     this.webcamage = 3600; // 3600s -> 1h
     this.initialMapCenter = [46.8527,9.5306]; // Chur (CH)
-    this.markers = [];
-    this.markerLayer = L.layerGroup(this.markers);
+    this.webcamsOnMap = new Map();
+
     this.nightTimeLayer = L.tileLayer(mbUrl, {id: 'mapbox/dark-v9', tileSize: 512, zoomOffset: -1, attribution: mbAttr}); // night style
     this.dayTimeLayer = L.tileLayer(mbUrl, {id: 'mapbox/light-v9', tileSize: 512, zoomOffset: -1, attribution: mbAttr}); // gray style (day)
-    this.gridLayer = L.layerGroup();
-    this.clusterMarkers = L.layerGroup();
+    this.webcamClusterMarkers = L.layerGroup();
+    this.webcamMarkers = L.layerGroup();
 
-    this.markerCluster = new Supercluster({
+    this.webcamCluster = new Supercluster({
       log: true,
       radius: 60,
       extent: 256,
@@ -63,16 +60,11 @@ class WebcamMap extends React.Component {
       layers: [this.dayTimeLayer]
     }).setView(this.initialMapCenter, 8);
 
-    // add grid layer
-    this.map.addLayer(this.gridLayer);
-
-    // add marker layer
-    this.map.addLayer(this.markerLayer);
-
-    this.map.addLayer(this.clusterMarkers);
+    this.map.addLayer(this.webcamClusterMarkers);
+    this.map.addLayer(this.webcamMarkers);
 
     // event handlers
-    this.map.on('moveend', this.onMapMooved.bind(this));
+    this.map.on('moveend', this.onMapMoved.bind(this));
 
     window.addEventListener("resize", this.updateDimensions.bind(this))
 
@@ -106,6 +98,7 @@ class WebcamMap extends React.Component {
     }).addTo(this.map);
 
     // add sidebar to map
+
     var sidebar = L.control.sidebar({
       autopan: false,       // whether to maintain the centered map point when opening the sidebar
       closeButton: true,    // whether t add a close button to the panes
@@ -118,46 +111,10 @@ class WebcamMap extends React.Component {
 
     this.updateIsDayTime();
 
-
-    var bounds = this.map.getBounds();
-    var pml = this.getCheckedPredictionModelLabels();
-    var confidence = this.getSelectedConfidence();
+    const bounds = this.map.getBounds();
+    const pml = this.getCheckedPredictionModelLabels();
+    const confidence = this.getSelectedConfidence();
     this.loadWebcams(this.webcamlimit, this.webcamage, bounds, pml, confidence);
-    this.loadGeoJSON();
-  }
-
-  drawGrid() {
-
-    const xFact = 25,
-        yFact = 20;
-
-    const m = this.map;
-    const bb = m.getBounds();
-    const xmin = m.latLngToLayerPoint( bb.getNorthWest() ).x;
-    const ymin = m.latLngToLayerPoint( bb.getNorthWest() ).y;
-    const xmax = m.latLngToLayerPoint( bb.getSouthEast() ).x;
-    const ymax = m.latLngToLayerPoint( bb.getSouthEast() ).y;
-        //converte da coordinate a pixel
-    const xinc = Math.round((xmax-xmin) / xFact);
-    const yinc = Math.round((ymax-ymin) / yFact);
-    let x,y, p1,p2, line;
-
-    this.gridLayer.clearLayers();
-
-    for(x = xmin; x<= xmax; x+= xinc)
-    {
-      p1 = m.layerPointToLatLng( new L.Point(x, ymin) );
-      p2 = m.layerPointToLatLng( new L.Point(x, ymax) );
-      line = new L.Polyline([p1, p2], { color: 'green', weight:1 });
-      this.gridLayer.addLayer(line);
-    }
-    for(y = ymin; y<= ymax; y+= yinc)
-    {
-      p1 = m.layerPointToLatLng( new L.Point(xmin, y) );
-      p2 = m.layerPointToLatLng( new L.Point(xmax, y) );
-      line = new L.Polyline([p1, p2], { color: 'green', weight:1 });
-      this.gridLayer.addLayer(line);
-    }
   }
 
   getCheckedPredictionModelLabels() {
@@ -202,59 +159,81 @@ class WebcamMap extends React.Component {
     axios.get('/webcam/v2', { params }).then(this.onWebcamsLoaded);
   }
 
-  loadGeoJSON() {
-    const params = {};
-    axios.get('/webcam/geojson', { params }).then(this.onGeoJSONLoaded);
-  }
-
-
   onWebcamsLoaded(response) {
-    const webcams = response.data;
-    this.setState({webcams: webcams});
-    this.addWebcamMarkers(webcams);
+
+    const data = response.data;
+    const webcamsGeoJson = data.features;
+    this.webcamCluster.load(webcamsGeoJson);
+    this.updateWebcams(this.map);
   }
 
-  onGeoJSONLoaded(response) {
-    const data = response.data[0];
-    this.markerCluster.load(data.geojson.features);
+  onMapMoved(event) {
+    const map = event.target;
+    this.updateWebcams(map);
   }
 
-  onMapMooved(event) {
-    var map = event.target;
-    var bounds = map.getBounds();
-    var pml = this.getCheckedPredictionModelLabels();
-    var confidence = this.getSelectedConfidence();
+  isPointInBounds(mapBounds, latLng) {
+    const westLng = mapBounds.getWest();
+    const southLat = mapBounds.getSouth();
+    const eastLng = mapBounds.getEast();
+    const northLat = mapBounds.getNorth();
+    const lat = latLng.lat;
+    const lng = latLng.lng;
+    const isInLng = lng >= westLng && lng <= eastLng;
+    const isInLat = lat >= southLat && lat <= northLat;
+    return isInLat && isInLng;
+  }
+
+  removeWebcamMarkersOfLowerZoomLevels(zoomLevel) {
+    const removedWebcams = [];
+    this.webcamsOnMap.forEach((webcam, key) => {
+      if (webcam.zoomLevel > zoomLevel) {
+        this.webcamMarkers.removeLayer(webcam.marker);
+        removedWebcams.push(key);
+      }
+    });
+    removedWebcams.forEach((webcamId) => {
+      this.webcamsOnMap.delete(webcamId);
+    })
+  }
+
+
+  updateWebcams(map) {
+    const mapBounds = map.getBounds();
+    const pml = this.getCheckedPredictionModelLabels();
+    const confidence = this.getSelectedConfidence();
     this.updateIsDayTime();
-    //this.loadWebcams(this.webcamlimit, this.webcamage, bounds, pml, confidence);
-    const mapZoom = this.map.getZoom();
-    const westLng = bounds.getWest();
-    const southLat = bounds.getSouth();
-    const eastLng = bounds.getEast();
-    const northLat = bounds.getNorth();
+
+    const mapZoom = map.getZoom();
+    this.removeWebcamMarkersOfLowerZoomLevels(mapZoom);
+
+    const westLng = mapBounds.getWest();
+    const southLat = mapBounds.getSouth();
+    const eastLng = mapBounds.getEast();
+    const northLat = mapBounds.getNorth();
     const clusterBounds = [westLng, southLat, eastLng, northLat];
-    const clusters = this.markerCluster.getClusters(clusterBounds, mapZoom);
+    const clusters = this.webcamCluster.getClusters(clusterBounds, mapZoom);
 
-
-
-    console.log(clusters);
-    this.createClusterMarkers(clusters);
-
-    const boundsPolygon = L.polygon([
-      bounds.getNorthWest(),
-      bounds.getNorthEast(),
-      bounds.getSouthEast(),
-      bounds.getSouthWest()
-    ]).addTo(map);
-    this.clusterMarkers.addLayer(boundsPolygon);
+    this.addWebcamsWithMinimalDistanceToTheirWebcamClusterToMap(clusters, mapZoom);
+    // show only webcams in list which are located within the map bounds
+    const webcams = Array.from(this.webcamsOnMap.values())
+        .filter(value => this.isPointInBounds(mapBounds, value.marker.getLatLng()))
+        .map(_ => _.webcam);
+    // this triggers updating the webcam list
+    this.setState({webcams: webcams});
   }
 
-  createClusterMarkers(clusters) {
-    this.clusterMarkers.clearLayers();
+  addWebcamsWithMinimalDistanceToTheirWebcamClusterToMap(clusters, mapZoom) {
+    this.webcamClusterMarkers.clearLayers();
 
     clusters.map((cluster) => {
+
+      // uncomment the lines to see the location of the cluster as a marker
+      /*
       const latlng = L.latLng(cluster.geometry.coordinates[1], cluster.geometry.coordinates[0]);
       const clusterMarker = this.createClusterIcon(cluster, latlng);
       this.clusterMarkers.addLayer(clusterMarker);
+       */
 
       const distance = (coordsA, coordsB) => {
         const deltaLng = Math.abs(parseFloat(coordsA[0]) - parseFloat(coordsB[0]));
@@ -278,19 +257,26 @@ class WebcamMap extends React.Component {
         return { value: min, idx: minIdx };
       }
 
-      const clusteredPoints = this.markerCluster.getLeaves(cluster.id, 10, 0);
+      if (!isNaN(cluster.id)) {
 
-      const clusteredPointsDistances = clusteredPoints.map((clusteredPoint) => {
-        return distance(clusteredPoint.geometry.coordinates, cluster.geometry.coordinates)
-      });
+        // get point with minimal distance to the cluster point
+        const clusteredPoints = this.webcamCluster.getLeaves(cluster.id, 10, 0);
+        const clusteredPointsDistances = clusteredPoints.map((clusteredPoint) => {
+          return distance(clusteredPoint.geometry.coordinates, cluster.geometry.coordinates)
+        });
 
-      const minimalDistance = minDistance(clusteredPointsDistances);
+        const minimalDistance = minDistance(clusteredPointsDistances);
+        const minimalDistanceClusteredPoint = clusteredPoints[minimalDistance.idx];
 
-      const minimalDistanceClusteredPoint = clusteredPoints[minimalDistance.idx];
-      const markerlatlng = L.latLng(minimalDistanceClusteredPoint.geometry.coordinates[1], minimalDistanceClusteredPoint.geometry.coordinates[0]);
-      const clusteredPointMarker = this.createClusteredPointIcon(markerlatlng);
-      this.clusterMarkers.addLayer(clusteredPointMarker);
-      //console.log(minimalDistance);
+        const webcam = minimalDistanceClusteredPoint.properties;
+        const webcamId = webcam.webcamid;
+
+        if (!this.webcamsOnMap.has(webcamId)) {
+          const clusteredPointMarker = this.getWebcamMarker(minimalDistanceClusteredPoint);
+          this.webcamMarkers.addLayer(clusteredPointMarker);
+          this.webcamsOnMap.set(webcamId, { webcam: webcam, zoomLevel: mapZoom, marker: clusteredPointMarker });
+        }
+      }
     });
   }
 
@@ -304,19 +290,7 @@ class WebcamMap extends React.Component {
       className: 'myDivIcon'
     });
 
-    //return L.marker(latlng, {icon});
     return L.marker(latlng, {icon: sunIcon});
-  }
-
-  createClusteredPointIcon(latlng) {
-
-    const inactiveIcon = L.divIcon({
-      html: '<i class="fa fa-video-camera map-webcam-icon-inactive"></i>',
-      iconSize: [20, 20],
-      className: 'myDivIcon'
-    });
-
-    return L.marker(latlng, {icon: inactiveIcon});
   }
 
   onWebcamFilterChanged(event) {
@@ -327,47 +301,25 @@ class WebcamMap extends React.Component {
     this.loadWebcams(this.webcamlimit, this.webcamage, bounds, pml, confidence);
   }
 
-  addWebcamMarkers(webcams) {
-    var webcam;
-    var marker;
-    var tooltipHtml;
-    var latitude, longitude;
-    var location;
-    var markerIcon;
+  getWebcamMarker(webcamGeoJson) {
+    const webcam = webcamGeoJson.properties;
 
-    this.clearWebcamMarkers();
+    const location = webcamGeoJson.geometry;
+    const longitude = location.coordinates[0];
+    const latitude = location.coordinates[1];
+    const markerIcon = RenderHelper.getMarkerIcon(location, webcam.status, webcam.prediction, this.state.isDayTime);
+    const marker = L.marker([latitude, longitude], {alt: webcam.id, icon: markerIcon}); //.on('click', this.onMarkerClick).addTo(this.map);
 
-    for (var i = 0; i < webcams.length; i++) {
-      webcam = webcams[i];
-      markerIcon = RenderHelper.getMarkerIcon(webcam.location, webcam.status, webcam.prediction, this.state.isDayTime);
-      location = webcam.location;
-      longitude = location.coordinates[0];
-      latitude = location.coordinates[1];
-      marker = L.marker([latitude, longitude], {alt: webcam.id, icon: markerIcon}); //.on('click', this.onMarkerClick).addTo(this.map);
-
-      if (!PredictionHelper.isValidPrediction(webcam.prediction)) {
-        const imgurlhighres = webcam.imgurlhighres;
-        marker.on('click', (e) => {
-          window.open(imgurlhighres, '_blank');
-        });
-      }
-
-      tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.imgurlhighres, webcam.prediction, this.state.isDayTime)
-      marker.bindTooltip(tooltipHtml, { direction: 'top', offset: [0, -15]});
-      this.markerLayer.addLayer(marker);
-      this.markers.push({ pkwebcam: webcam.pkwebcam, marker: marker});
-
+    if (!PredictionHelper.isValidPrediction(webcam.prediction)) {
+      const imgurlhighres = webcam.imgurlhighres;
+      marker.on('click', (e) => {
+        window.open(imgurlhighres, '_blank');
+      });
     }
-  }
 
-  clearWebcamMarkers() {
-    if (this.markerLayer !== undefined) {
-      this.markerLayer.clearLayers();
-    }
-  }
-
-  onMarkerClick() {
-    alert('clicked marker');
+    const tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.imgurlhighres, webcam.prediction, this.state.isDayTime)
+    marker.bindTooltip(tooltipHtml, { direction: 'top', offset: [0, 0], tooltipAnchor: [10, 10]});
+    return marker;
   }
 
   updateIsDayTime() {
