@@ -317,7 +317,7 @@ class WebcamMap extends React.Component {
       });
     }
 
-    const tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.imgurlmedres, webcam.imgurlhighres, webcam.prediction, this.state.isDayTime)
+    const tooltipHtml = RenderHelper.getWebcamMarkerToolTipHtml(webcam.title, webcam.city, webcam.country, webcam.countrycode, webcam.lastupdate, webcam.status, webcam.thumbnail, webcam.preview, webcam.prediction, this.state.isDayTime)
     marker.bindTooltip(tooltipHtml, { direction: 'top', offset: [0, 0], tooltipAnchor: [10, 10]});
     return marker;
   }

@@ -86,7 +86,7 @@ class RenderHelper {
             } else {
                 markerIcon = inactiveIcon;
             }
-            if (PredictionHelper.isValidPrediction(prediction)) {
+            if (PredictionHelper.isValidPrediction(prediction) && isDayTime) {
                 markerIcon = icons[prediction.cssclass];
             }
         }

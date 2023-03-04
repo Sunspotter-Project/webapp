@@ -7,7 +7,7 @@ class PredictionHelper {
         let predictionData = {};
 
         // found a prediction and its day time
-        if (this.isValidPrediction(prediction)) {
+        if (this.isValidPrediction(prediction) && isDayTime) {
             const runid = prediction.runid;
             const tfindex = prediction.tfindex;
             const imgurl = prediction.imgurl;
