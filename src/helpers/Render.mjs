@@ -8,6 +8,7 @@ class RenderHelper {
         const predictionData = PredictionHelper.formatPrediction(prediction, isDayTime, webcamLastupdate, webcamStatus, webcamImgUrlMedRes, iconCssClassPrefix);
         const predictionImage = `<img src="${predictionData.fullImgUrl}" />`;
         const predictionImageAndLink = `<a href="${webcamImgUrlHighRes}" target="_blank" >${predictionImage}</a>`;
+        const predictionCreateDat = predictionData.createdat ? `<div class="${cssClassPrefix}-createdat">${predictionData.createdatText}&nbsp;${predictionData.createdat}</div>` : '';
         const predictionImageResult = PredictionHelper.isValidPrediction(prediction) ? predictionImage : predictionImageAndLink;
         const html =
         `<div class="${cssClassPrefix}">
@@ -18,10 +19,8 @@ class RenderHelper {
             </div>
             <div class="${cssClassPrefix}-data">
                 <div class="${cssClassPrefix}-title"><i class="${predictionData.iconClasses}"></i>&nbsp;<span class="${cssClassPrefix}-predictionconfidence">${predictionData.confidence}</span>&nbsp;${webcamTitle}</div>
-                
                 <div class="${cssClassPrefix}-city">${webcamCity} <span class="${cssClassPrefix}-country">${webcamCountry}&nbsp;(${webcamCountryCode})</span></div>
-            
-                <div class="${cssClassPrefix}-createdat">${predictionData.createdatText}&nbsp;${predictionData.createdat}</div>
+                <div class="${cssClassPrefix}-datetime">${predictionData.dateTimeText}</div>
             </div>
         </div>`;
 

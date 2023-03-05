@@ -20,18 +20,24 @@ class PredictionHelper {
 
             // confidence
             predictionData.confidence = `${Math.round(prediction.confidence * 100.0)}%`;
-            predictionData.createdat = DateTimeHelper.formatDateTimeString(prediction.createdat);
-            predictionData.createdatText = 'Letzte Vorhersage:';
         } else {
             // no prediction found or its night time
             predictionData.fullImgUrl = webcamImgUrl;
             predictionData.iconClasses = `fa fa-video-camera prediction-icon ${iconCssClassPrefix}-webcam-icon-${webcamStatus} ${isDayTime ? '' : 'night-theme'}`;
             predictionData.confidence = 'live';
-            predictionData.createdat = DateTimeHelper.formatUnixTimestamp(webcamLastupdate);
-            predictionData.createdatText = 'Letzte Aufnahme:';
         }
 
+        predictionData.dateTimeText = PredictionHelper.getPredictionDateTimeText(webcamLastupdate, prediction.createdat)
+
         return predictionData;
+    }
+
+    static getPredictionDateTimeText(webcamLastupdate, predictionCreatedat) {
+        let dateTimeText = `Aufnahme: ${ DateTimeHelper.formatUnixTimestamp(webcamLastupdate) }`;
+        if (predictionCreatedat) {
+            dateTimeText += `, Vorhersage: ${ DateTimeHelper.formatDateTimeString(predictionCreatedat, { hour: "numeric", minute: "numeric" }) }`;
+        }
+        return dateTimeText;
     }
 
     static formatFirstPrediction(predictions, isDayTime, webcamLastupdate, webcamStatus, webcamImgUrl, iconCssClassPrefix) {
