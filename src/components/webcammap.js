@@ -9,6 +9,7 @@ import * as GeoSearch from 'leaflet-geosearch';
 import 'leaflet-sidebar-v2'
 import WebcamList from './webcamlist.js';
 import './webcamfilter.js';
+import './mapbutton.js';
 import { DaylightUtil } from '../helpers/Daylight.mjs';
 import { RenderHelper } from '../helpers/Render.mjs';
 import {PredictionHelper} from "../helpers/Prediction.mjs";
@@ -57,6 +58,7 @@ class WebcamMap extends React.Component {
     this.map = L.map('map', {
       center: [39.73, -104.99],
       zoom: 10,
+      zoomControl: false,
       layers: [this.dayTimeLayer]
     }).setView(this.initialMapCenter, 8);
 
@@ -86,16 +88,20 @@ class WebcamMap extends React.Component {
       style: 'bar',
       marker: searchMarkerOptions
     });
-    this.map.addControl(search);
+    //this.map.addControl(search);
 
     // add the webcam filter control to the map
+    /*
     this.webcamFilter = L.webcamFilterControl({
       position: 'bottomcenter',     // left or right
       selectOptions: '5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100',
       selectedOption: '60',
       selectOptionsUnit: '%',
       onFilterChange: this.onWebcamFilterChanged
-    }).addTo(this.map);
+    });
+
+    this.map.addControl(this.webcamFilter);
+    */
 
     // add sidebar to map
 
@@ -104,10 +110,12 @@ class WebcamMap extends React.Component {
       closeButton: true,    // whether t add a close button to the panes
       container: 'sidebar', // the DOM container or #ID of a predefined sidebar container that should be used
       position: 'right',     // left or right
-    }).addTo(this.map);
+    });
+
+    // this.map.addControl(sidebar);
 
     // open the webcam list per default
-    sidebar.open('webcamlist');
+    //sidebar.open('webcamlist');
 
     this.updateIsDayTime();
 
@@ -329,6 +337,7 @@ class WebcamMap extends React.Component {
       this.setState({isDayTime: isDayTime});
       this.setMapDayNighTimeLayer(isDayTime);
       // enable and disable the webcam filter according to the day or night time
+      /*
       if (isDayTime) {
         this.webcamFilter.check();
         this.webcamFilter.enable();
@@ -336,6 +345,8 @@ class WebcamMap extends React.Component {
         this.webcamFilter.uncheck();
         this.webcamFilter.disable();
       }
+
+       */
     }
   }
 
@@ -350,7 +361,7 @@ class WebcamMap extends React.Component {
   }
 
   updateDimensions() {
-    const height = window.innerHeight;
+    const height = window.innerHeight - 124; // (header + header border ) + (footer + footer border)
     this.setState({ height: height })
   }
 
@@ -364,34 +375,6 @@ class WebcamMap extends React.Component {
 
   render() {
     return <div class="webcammap"><div id="map" style={{ height: this.state.height }}></div>
-      <div id="sidebar" class="leaflet-sidebar collapsed">
-
-        <div class={`leaflet-sidebar-tabs ${this.state.isDayTime ? '':'night-theme'}`}>
-            <ul role="tablist">
-                <li><a href="#webcamlist" role="tab"><i class="fa fa-video-camera"></i></a></li>
-                <li><a href="#location" role="tab"><i class="fa fa-location-arrow active-location"></i></a></li>
-            </ul>
-        </div>
-
-        <div class={`leaflet-sidebar-content ${this.state.isDayTime ? '':'night-theme'}`}>
-
-            <div class="leaflet-sidebar-pane" id="webcamlist">
-                <h1 class="leaflet-sidebar-header">
-                    Sunspotter
-                    <div class="leaflet-sidebar-close"><i class="fa fa-caret-right"></i></div>
-                </h1>
-                <WebcamList webcams={this.state.webcams} isDayTime={this.state.isDayTime} />
-            </div>
-
-            <div class="leaflet-sidebar-pane" id="home">
-                <h1 class="leaflet-sidebar-header">
-                    sidebar-v2
-                    <div class="leaflet-sidebar-close"><i class="fa fa-caret-right"></i></div>
-                </h1>
-                <p>A responsive sidebar for mapping libraries</p>
-            </div>
-        </div>
-      </div>
     </div>
   }
 }

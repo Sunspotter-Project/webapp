@@ -1,4 +1,113 @@
 
+/* CSS for Header component */
+.header {
+    height: 70px;
+    padding: 0px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header .btn {
+    color: rgb(0 150 255);
+}
+
+.header .btn-selected {
+    color: white;
+    background-color: rgb(0 150 255);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.header-center {
+    display: flex;
+    align-items: center;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    grid-gap: 6px;
+}
+
+.header-logo {
+    width: 36px;
+    height: 36px;
+}
+
+.header-search {
+    display: flex;
+    grid-gap: 6px;
+    padding: 6px;
+    border-radius: 30px;
+    border: 0.5px solid rgba(0,0,0,0.25);
+}
+
+.header-search .btn-selected {
+    color: white;
+    background-color: #cbf83e;
+}
+
+.header-search > input {
+    border: none;
+    width: 200px;
+    padding-left: 10px;
+}
+
+
+/* CSS for Footer component */
+.footer {
+    height: 54px;
+    padding: 0px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    grid-gap: 6px;
+}
+
+.footer-center {
+    display: flex;
+    align-items: center;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    grid-gap: 6px;
+}
+
+
+.btn {
+    display: flex;
+    align-items: center;
+    border-radius: 100%;
+    padding: 8px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    border-radius: 100%;
+    padding: 8px;
+}
+
+.btn-selected {
+    background-color: black;
+    color: white;
+}
+
+.btn-to-select {
+    border: 0.5px solid rgba(0,0,0,0.25);
+}
+
 .leaflet-sidebar-content::-webkit-scrollbar {
     width: 0px;
   }
@@ -343,5 +452,18 @@
 }
 .marker-cluster span {
     line-height: 30px;
+}
+
+/* styles for the Leaflet map button */
+
+.map-button {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background-color: white;
+    box-shadow: 0px 0px 3px #000000;
+    border: none;
+    font-size: 20px;
+    text-align: center;
 }
 
